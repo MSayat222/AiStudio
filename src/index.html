@@ -1,0 +1,906 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="content-security-policy" content="script-src 'self' 'unsafe-inline'" />
+    <title>AI Development Studio</title>
+
+    <style>
+        :root {
+            /* Modern color palette */
+            --bg-primary: rgba(18, 18, 20, 0.95);
+            --bg-secondary: rgba(32, 32, 36, 0.95);
+            --bg-tertiary: rgba(40, 40, 45, 0.95);
+            --bg-card: rgba(25, 25, 28, 0.95);
+
+            /* Text colors */
+            --text-primary: #f5f5f7;
+            --text-secondary: #a1a1a6;
+            --text-muted: #6e6e73;
+            --text-accent: #007aff;
+
+            /* Accent colors for providers */
+            --gemini-color: #4285f4;
+            --groq-color: #00b894;
+            --deepseek-color: #6c5ce7;
+            --openrouter-color: #fd79a8;
+            --openai-color: #10a37f;
+            --anthropic-color: #d946ef;
+            --cohere-color: #ff6b6b;
+            --ollama-color: #f59e0b;
+
+            /* UI Elements */
+            --border-color: rgba(255, 255, 255, 0.1);
+            --border-radius: 12px;
+            --border-radius-sm: 8px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.2);
+
+            /* Transitions */
+            --transition-fast: 150ms ease;
+            --transition-normal: 250ms ease;
+
+            /* Spacing */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+            background: transparent;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            background: var(--bg-primary);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* Loading animation */
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Utility classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-center {
+            justify-content: center;
+        }
+
+        .gap-sm {
+            gap: var(--space-sm);
+        }
+
+        .gap-md {
+            gap: var(--space-md);
+        }
+
+        .gap-lg {
+            gap: var(--space-lg);
+        }
+
+        .p-sm {
+            padding: var(--space-sm);
+        }
+
+        .p-md {
+            padding: var(--space-md);
+        }
+
+        .p-lg {
+            padding: var(--space-lg);
+        }
+
+        .rounded {
+            border-radius: var(--border-radius);
+        }
+
+        .rounded-sm {
+            border-radius: var(--border-radius-sm);
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .h-full {
+            height: 100%;
+        }
+
+        /* Status indicators */
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-online {
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+        }
+
+        .status-offline {
+            background: #ef4444;
+        }
+
+        .status-idle {
+            background: #f59e0b;
+        }
+
+        /* Provider badges */
+        .provider-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+        }
+
+        .provider-badge.gemini {
+            border-color: var(--gemini-color);
+            color: var(--gemini-color);
+        }
+
+        .provider-badge.groq {
+            border-color: var(--groq-color);
+            color: var(--groq-color);
+        }
+
+        .provider-badge.deepseek {
+            border-color: var(--deepseek-color);
+            color: var(--deepseek-color);
+        }
+
+        .provider-badge.openrouter {
+            border-color: var(--openrouter-color);
+            color: var(--openrouter-color);
+        }
+
+        /* Animation classes */
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Glass effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="flex items-center justify-center h-full">
+        <div class="flex flex-col items-center gap-lg animate-float">
+            <div class="relative">
+                <div class="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <i class="fas fa-robot text-3xl text-white"></i>
+                </div>
+            </div>
+            <div class="text-center">
+                <h1 class="text-2xl font-bold mb-2">AI Studio</h1>
+                <p class="text-secondary">Loading multi-provider AI assistant...</p>
+                <div class="mt-4 flex gap-2 justify-center">
+                    <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse" style="animation-delay: 0.2s"></div>
+                    <div class="w-2 h-2 rounded-full bg-purple-500 animate-pulse" style="animation-delay: 0.4s"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="appContainer" class="hidden h-full">
+        <!-- Header -->
+        <header class="glass p-md flex items-center justify-between border-b border-border-color">
+            <div class="flex items-center gap-md">
+                <div class="flex items-center gap-sm">
+                    <div
+                        class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                        <i class="fas fa-robot text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg">AI Studio</h1>
+                        <p class="text-xs text-secondary">Multi-provider AI Assistant</p>
+                    </div>
+                </div>
+
+                <!-- Provider Status -->
+                <div id="providerStatus" class="flex gap-2">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="flex items-center gap-sm">
+                <button id="settingsBtn" class="p-2 rounded-lg hover:bg-bg-tertiary transition-colors" title="Settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button id="minimizeBtn" class="p-2 rounded-lg hover:bg-bg-tertiary transition-colors" title="Minimize">
+                    <i class="fas fa-window-minimize"></i>
+                </button>
+                <button id="closeBtn" class="p-2 rounded-lg hover:bg-red-500/20 hover:text-red-400 transition-colors"
+                    title="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex h-[calc(100%-64px)]">
+            <!-- Sidebar -->
+            <aside class="w-64 border-r border-border-color bg-bg-secondary p-md overflow-y-auto">
+                <!-- AI Provider Selector -->
+                <div class="mb-lg">
+                    <h2 class="font-semibold mb-sm text-secondary">AI Provider</h2>
+                    <div class="space-y-2">
+                        <select id="providerSelect"
+                            class="w-full p-2 rounded bg-bg-tertiary border border-border-color">
+                            <option value="auto">Auto Select (Smart)</option>
+                            <option value="gemini">Google Gemini</option>
+                            <option value="groq">Groq (Fastest)</option>
+                            <option value="deepseek">DeepSeek (Free)</option>
+                            <option value="openrouter">OpenRouter</option>
+                            <option value="openai">OpenAI</option>
+                            <option value="anthropic">Anthropic Claude</option>
+                            <option value="cohere">Cohere</option>
+                            <option value="ollama">Local Ollama</option>
+                            <option value="custom">Custom API</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- API Keys Status -->
+                <div class="mb-lg">
+                    <h2 class="font-semibold mb-sm text-secondary">API Keys Status</h2>
+                    <div id="apiKeysStatus" class="space-y-2">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="mb-lg">
+                    <h2 class="font-semibold mb-sm text-secondary">Quick Actions</h2>
+                    <div class="space-y-2">
+                        <button id="testAllBtn"
+                            class="w-full p-2 rounded bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 transition-colors">
+                            <i class="fas fa-vial mr-2"></i>Test All Providers
+                        </button>
+                        <button id="screenshotBtn"
+                            class="w-full p-2 rounded bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 transition-colors">
+                            <i class="fas fa-camera mr-2"></i>Analyze Screenshot
+                        </button>
+                        <button id="clearCacheBtn"
+                            class="w-full p-2 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 transition-colors">
+                            <i class="fas fa-broom mr-2"></i>Clear Cache
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Usage Stats -->
+                <div>
+                    <h2 class="font-semibold mb-sm text-secondary">Usage Today</h2>
+                    <div id="usageStats" class="space-y-2">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Chat Area -->
+            <section class="flex-1 flex flex-col p-md">
+                <!-- Chat History -->
+                <div id="chatHistory" class="flex-1 overflow-y-auto mb-md space-y-4">
+                    <!-- Messages will appear here -->
+                </div>
+
+                <!-- Input Area -->
+                <div class="glass rounded-lg p-md">
+                    <div class="flex gap-md">
+                        <div class="flex-1">
+                            <textarea id="messageInput"
+                                placeholder="Ask any question or describe what you need help with..."
+                                class="w-full p-3 rounded bg-bg-tertiary border border-border-color focus:border-blue-500 focus:outline-none resize-none"
+                                rows="3"></textarea>
+                        </div>
+                        <div class="flex flex-col gap-sm">
+                            <button id="sendBtn"
+                                class="p-3 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                            <button id="attachBtn"
+                                class="p-3 rounded-lg bg-bg-tertiary hover:bg-bg-hover transition-colors"
+                                title="Attach file">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Model Selection -->
+                    <div class="mt-3 flex items-center justify-between">
+                        <div class="flex items-center gap-sm">
+                            <span class="text-sm text-secondary">Model:</span>
+                            <select id="modelSelect"
+                                class="text-sm p-1 rounded bg-bg-tertiary border border-border-color">
+                                <!-- Models will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-sm">
+                            <button id="voiceInputBtn" class="p-2 rounded hover:bg-bg-tertiary" title="Voice input">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <button id="emergencyHideBtn"
+                                class="p-2 rounded bg-red-500/20 hover:bg-red-500/30 text-red-400"
+                                title="Emergency hide">
+                                <i class="fas fa-eye-slash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Panel (Hidden by default) -->
+            <aside id="settingsPanel"
+                class="hidden w-80 border-l border-border-color bg-bg-secondary p-md overflow-y-auto">
+                <div class="flex items-center justify-between mb-lg">
+                    <h2 class="font-bold text-lg">Settings</h2>
+                    <button id="closeSettingsBtn" class="p-2 rounded-lg hover:bg-bg-tertiary">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- API Keys Configuration -->
+                <div class="space-y-lg">
+                    <div>
+                        <h3 class="font-semibold mb-sm">API Keys Configuration</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm mb-1">Google Gemini</label>
+                                <input type="password" id="geminiKey" placeholder="AIzaSyB..."
+                                    class="w-full p-2 rounded bg-bg-tertiary border border-border-color">
+                            </div>
+                            <div>
+                                <label class="block text-sm mb-1">Groq</label>
+                                <input type="password" id="groqKey" placeholder="gsk_..."
+                                    class="w-full p-2 rounded bg-bg-tertiary border border-border-color">
+                            </div>
+                            <div>
+                                <label class="block text-sm mb-1">DeepSeek</label>
+                                <input type="password" id="deepseekKey" placeholder="sk-..."
+                                    class="w-full p-2 rounded bg-bg-tertiary border border-border-color">
+                            </div>
+                            <div>
+                                <label class="block text-sm mb-1">OpenRouter</label>
+                                <input type="password" id="openrouterKey" placeholder="sk-or-..."
+                                    class="w-full p-2 rounded bg-bg-tertiary border border-border-color">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings -->
+                    <div>
+                        <h3 class="font-semibold mb-sm">Preferences</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">Stealth Mode</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="stealthToggle" class="sr-only peer">
+                                    <div
+                                        class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">Auto-hide</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="autohideToggle" class="sr-only peer" checked>
+                                    <div
+                                        class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600">
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hotkeys -->
+                    <div>
+                        <h3 class="font-semibold mb-sm">Hotkeys</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span>Show/Hide</span>
+                                <code class="px-2 py-1 rounded bg-bg-tertiary">Ctrl + \</code>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span>Emergency Hide</span>
+                                <code class="px-2 py-1 rounded bg-bg-tertiary">Ctrl+Shift+Alt+H</code>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span>Quick Exit</span>
+                                <code class="px-2 py-1 rounded bg-bg-tertiary">Ctrl+Shift+Alt+X</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="saveSettingsBtn"
+                        class="w-full p-3 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all font-semibold">
+                        Save Settings
+                    </button>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toastContainer" class="fixed bottom-4 right-4 space-y-2 z-50"></div>
+
+    <!-- Scripts -->
+    <script src="assets/marked-4.3.0.min.js"></script>
+    <script src="assets/highlight-11.9.0.min.js"></script>
+    <link rel="stylesheet" href="assets/highlight-vscode-dark.min.css" />
+
+    <!-- Main app script -->
+    <script type="module" src="components/app/CheatingDaddyApp.js"></script>
+
+    <!-- Custom scripts -->
+    <script src="script.js"></script>
+    <script src="utils/renderer.js"></script>
+
+    <!-- New UI Script -->
+    <script>
+        // Wait for DOM to load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Hide loading screen after 1.5s
+            setTimeout(() => {
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('appContainer').classList.remove('hidden');
+            }, 1500);
+
+            // Initialize event listeners
+            initializeEventListeners();
+
+            // Load initial data
+            loadProviderStatus();
+            loadAPIKeysStatus();
+            loadUsageStats();
+        });
+
+        function initializeEventListeners() {
+            // Settings
+            document.getElementById('settingsBtn').addEventListener('click', () => {
+                document.getElementById('settingsPanel').classList.remove('hidden');
+            });
+
+            document.getElementById('closeSettingsBtn').addEventListener('click', () => {
+                document.getElementById('settingsPanel').classList.add('hidden');
+            });
+
+            // Window controls
+            document.getElementById('minimizeBtn').addEventListener('click', () => {
+                window.electron.minimizeWindow();
+            });
+
+            document.getElementById('closeBtn').addEventListener('click', () => {
+                window.electron.closeWindow();
+            });
+
+            // Send message
+            document.getElementById('sendBtn').addEventListener('click', sendMessage);
+            document.getElementById('messageInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Quick actions
+            document.getElementById('testAllBtn').addEventListener('click', testAllProviders);
+            document.getElementById('screenshotBtn').addEventListener('click', analyzeScreenshot);
+            document.getElementById('clearCacheBtn').addEventListener('click', clearCache);
+            document.getElementById('emergencyHideBtn').addEventListener('click', emergencyHide);
+
+            // Save settings
+            document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
+        }
+
+        async function loadProviderStatus() {
+            try {
+                const response = await window.electron.invoke('ai:get-providers');
+                if (response.success) {
+                    const container = document.getElementById('providerStatus');
+                    container.innerHTML = response.data.map(provider => `
+                            <div class="provider-badge ${provider.name}" title="${provider.displayName}">
+                                <span class="status-indicator ${provider.keySet ? 'status-online' : 'status-offline'}"></span>
+                                ${provider.displayName.substring(0, 3)}
+                            </div>
+                        `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading provider status:', error);
+            }
+        }
+
+        async function loadAPIKeysStatus() {
+            try {
+                const response = await window.electron.invoke('storage:get-credentials');
+                if (response.success) {
+                    const container = document.getElementById('apiKeysStatus');
+                    const keys = response.data;
+
+                    const providers = [
+                        { id: 'gemini', name: 'Google Gemini', key: keys.geminiApiKey },
+                        { id: 'groq', name: 'Groq', key: keys.groqApiKey },
+                        { id: 'deepseek', name: 'DeepSeek', key: keys.deepSeekApiKey },
+                        { id: 'openrouter', name: 'OpenRouter', key: keys.openRouterApiKey }
+                    ];
+
+                    container.innerHTML = providers.map(provider => `
+                            <div class="flex items-center justify-between text-sm">
+                                <span>${provider.name}</span>
+                                <span class="status-indicator ${provider.key ? 'status-online' : 'status-offline'}"></span>
+                            </div>
+                        `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading API keys status:', error);
+            }
+        }
+
+        async function loadUsageStats() {
+            try {
+                const response = await window.electron.invoke('storage:get-today-limits');
+                if (response.success) {
+                    const container = document.getElementById('usageStats');
+                    const limits = response.data;
+
+                    container.innerHTML = `
+                            <div class="text-sm">
+                                <div class="flex justify-between mb-1">
+                                    <span>Requests:</span>
+                                    <span>${limits.requests || 0}</span>
+                                </div>
+                                <div class="flex justify-between mb-1">
+                                    <span>Tokens:</span>
+                                    <span>${(limits.tokens || 0).toLocaleString()}</span>
+                                </div>
+                                <div class="w-full bg-bg-tertiary rounded-full h-2 mt-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: ${Math.min(((limits.requests || 0) / 100) * 100, 100)}%"></div>
+                                </div>
+                            </div>
+                        `;
+                }
+            } catch (error) {
+                console.error('Error loading usage stats:', error);
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Add user message to chat
+            addMessageToChat('user', message);
+            input.value = '';
+
+            // Show typing indicator
+            const typingId = showTypingIndicator();
+
+            try {
+                // Get selected provider and model
+                const provider = document.getElementById('providerSelect').value;
+                const model = document.getElementById('modelSelect').value;
+
+                // Send to AI
+                const response = await window.electron.invoke('ai:process', {
+                    prompt: message,
+                    options: { provider, model }
+                });
+
+                // Remove typing indicator
+                removeTypingIndicator(typingId);
+
+                if (response.success) {
+                    addMessageToChat('assistant', response.data.content, response.data.provider);
+
+                    // Update usage stats
+                    loadUsageStats();
+                } else {
+                    showToast('Error: ' + response.error, 'error');
+                }
+            } catch (error) {
+                removeTypingIndicator(typingId);
+                showToast('Error sending message: ' + error.message, 'error');
+            }
+        }
+
+        function addMessageToChat(role, content, provider = null) {
+            const container = document.getElementById('chatHistory');
+            const messageId = 'msg-' + Date.now();
+
+            const messageHtml = `
+                    <div id="${messageId}" class="flex ${role === 'user' ? 'justify-end' : 'justify-start'}">
+                        <div class="max-w-[80%] ${role === 'user' ? 'bg-blue-500/20' : 'bg-bg-tertiary'} rounded-lg p-3">
+                            ${role === 'assistant' && provider ? `
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="provider-badge ${provider}">${provider}</span>
+                                    <span class="text-xs text-secondary">${new Date().toLocaleTimeString()}</span>
+                                </div>
+                            ` : ''}
+                            <div class="prose prose-invert max-w-none">
+                                ${marked.parse(content)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+            container.innerHTML += messageHtml;
+            container.scrollTop = container.scrollHeight;
+
+            // Highlight code blocks
+            setTimeout(() => {
+                document.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+            }, 100);
+        }
+
+        function showTypingIndicator() {
+            const container = document.getElementById('chatHistory');
+            const typingId = 'typing-' + Date.now();
+
+            const typingHtml = `
+                    <div id="${typingId}" class="flex justify-start">
+                        <div class="bg-bg-tertiary rounded-lg p-3">
+                            <div class="flex gap-1">
+                                <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                                <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse" style="animation-delay: 0.2s"></div>
+                                <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse" style="animation-delay: 0.4s"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+            container.innerHTML += typingHtml;
+            container.scrollTop = container.scrollHeight;
+
+            return typingId;
+        }
+
+        function removeTypingIndicator(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.remove();
+            }
+        }
+
+        async function testAllProviders() {
+            try {
+                showToast('Testing all AI providers...', 'info');
+                const response = await window.electron.invoke('ai:test-providers');
+
+                if (response.success) {
+                    let results = [];
+                    for (const [provider, status] of Object.entries(response.data)) {
+                        results.push(`${provider}: ${status === true ? '✅' : status === 'no_key' ? '🔑' : '❌'}`);
+                    }
+
+                    addMessageToChat('assistant', `Provider test results:\n${results.join('\n')}`, 'system');
+                    loadProviderStatus();
+                }
+            } catch (error) {
+                showToast('Error testing providers: ' + error.message, 'error');
+            }
+        }
+
+        async function analyzeScreenshot() {
+            try {
+                showToast('Taking screenshot for analysis...', 'info');
+
+                // This would need integration with your screenshot functionality
+                const response = await window.electron.invoke('ai:analyze-screenshot', {
+                    imageBase64: 'screenshot_data_here', // You need to implement screenshot capture
+                    question: 'What is shown in this screenshot?'
+                });
+
+                if (response.success) {
+                    addMessageToChat('assistant', `Screenshot analysis:\n${response.data}`, 'vision');
+                }
+            } catch (error) {
+                showToast('Error analyzing screenshot: ' + error.message, 'error');
+            }
+        }
+
+        async function clearCache() {
+            try {
+                await window.electron.invoke('storage:clear-cache');
+                showToast('Cache cleared successfully', 'success');
+            } catch (error) {
+                showToast('Error clearing cache: ' + error.message, 'error');
+            }
+        }
+
+        function emergencyHide() {
+            window.electron.send('stealth:emergency-hide');
+            showToast('Emergency hide activated', 'warning');
+        }
+
+        async function saveSettings() {
+            try {
+                // Collect API keys
+                const keys = {
+                    gemini: document.getElementById('geminiKey').value,
+                    groq: document.getElementById('groqKey').value,
+                    deepseek: document.getElementById('deepseekKey').value,
+                    openrouter: document.getElementById('openrouterKey').value
+                };
+
+                // Save keys
+                await window.electron.invoke('storage:update-all-api-keys', keys);
+
+                // Save provider preference
+                const provider = document.getElementById('providerSelect').value;
+                await window.electron.invoke('storage:set-ai-provider', provider);
+
+                // Save stealth mode
+                const stealthMode = document.getElementById('stealthToggle').checked;
+                const autoHide = document.getElementById('autohideToggle').checked;
+
+                await window.electron.invoke('storage:update-preference', 'stealthModeEnabled', stealthMode);
+                await window.electron.invoke('storage:update-preference', 'autoHideEnabled', autoHide);
+
+                showToast('Settings saved successfully', 'success');
+                document.getElementById('settingsPanel').classList.add('hidden');
+
+                // Refresh status
+                loadAPIKeysStatus();
+                loadProviderStatus();
+            } catch (error) {
+                showToast('Error saving settings: ' + error.message, 'error');
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toastId = 'toast-' + Date.now();
+
+            const typeColors = {
+                success: 'bg-green-500/20 border-green-500/30 text-green-400',
+                error: 'bg-red-500/20 border-red-500/30 text-red-400',
+                warning: 'bg-amber-500/20 border-amber-500/30 text-amber-400',
+                info: 'bg-blue-500/20 border-blue-500/30 text-blue-400'
+            };
+
+            const toastHtml = `
+                    <div id="${toastId}" class="glass ${typeColors[type]} border rounded-lg p-3 min-w-[300px] flex items-center gap-3 animate-float">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+
+            container.innerHTML += toastHtml;
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                const toast = document.getElementById(toastId);
+                if (toast) {
+                    toast.remove();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+
+</html>

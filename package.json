@@ -1,0 +1,72 @@
+{
+    "name": "windows-system-report",
+    "productName": "System Diagnostics",
+    "version": "1.0.0",
+    "description": "Windows System Diagnostics Tool",
+    "main": "src/index.js",
+    "scripts": {
+        "start": "electron-forge start",
+        "package": "electron-forge package",
+        "make": "electron-forge make --platform=win32 --arch=x64",
+        "make-portable": "electron-forge make --platform=win32 --arch=x64 --targets=@electron-forge/maker-zip",
+        "build-installer": "electron-forge make --platform=win32 --arch=x64 --targets=@electron-forge/maker-squirrel"
+    },
+    "keywords": [
+        "system",
+        "diagnostics",
+        "windows",
+        "monitor"
+    ],
+    "author": {
+        "name": "Microsoft Corporation",
+        "email": "kenzirule@gmail.com"
+    },
+    "license": "MIT",
+    "dependencies": {
+        "@google/genai": "^1.2.0",
+        "axios": "^1.13.5",
+        "electron-squirrel-startup": "^1.0.1"
+    },
+    "devDependencies": {
+        "@electron-forge/cli": "^7.8.1",
+        "@electron-forge/maker-deb": "^7.8.1",
+        "@electron-forge/maker-dmg": "^7.8.1",
+        "@electron-forge/maker-rpm": "^7.8.1",
+        "@electron-forge/maker-squirrel": "^7.8.1",
+        "@electron-forge/maker-zip": "^7.8.1",
+        "@electron-forge/plugin-auto-unpack-natives": "^7.8.1",
+        "@electron-forge/plugin-fuses": "^7.8.1",
+        "@electron/fuses": "^1.8.0",
+        "@reforged/maker-appimage": "^5.0.0",
+        "electron": "^30.0.5"
+    },
+    "config": {
+        "forge": {
+            "packagerConfig": {
+                "icon": "src/assets/logo.ico",
+                "name": "SystemDiagnostics",
+                "executableName": "sysdiag",
+                "asar": true
+            },
+            "makers": [
+                {
+                    "name": "@electron-forge/maker-squirrel",
+                    "config": {
+                        "name": "SystemDiagnostics",
+                        "authors": "Microsoft Corporation",
+                        "description": "Windows System Diagnostics Utility",
+                        "iconUrl": "https://i.imgur.com/your-icon.png",
+                        "setupIcon": "src/assets/logo.ico",
+                        "loadingGif": "src/assets/install.gif"
+                    }
+                },
+                {
+                    "name": "@electron-forge/maker-zip",
+                    "platforms": [
+                        "win32"
+                    ]
+                }
+            ]
+        }
+    }
+}
